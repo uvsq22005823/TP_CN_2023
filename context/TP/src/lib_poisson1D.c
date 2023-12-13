@@ -1,21 +1,64 @@
 /**********************************************/
 /* lib_poisson1D.c                            */
-/* Numerical library developed to solve 1D    */ 
+/* Numerical library developed to solve 1D    */
 /* Poisson problem (Heat equation)            */
 /**********************************************/
 #include "lib_poisson1D.h"
 
+// AB => Matrice stockée en General Band
+// Creating 1D Poisson matrix in AB
 void set_GB_operator_colMajor_poisson1D(double* AB, int *lab, int *la, int *kv){
+  // lab is row size and la is column size
+  // i.e. lab number of columns and la number of rows
+	int k_int = (int)*kv;
+  int i = 0;
+  int j = 0;
+	int indice = 0;
+
+  while (i != (int)*lab)
+  {
+    if(i == j)
+      AB[(k_int+1+i-j) + k_int*i+j] = 2;
+    else if(i == j+k_int || i == j-k_int)
+      AB[(k_int+1+i-j) + k_int*i+j] = -1;
+    else
+      AB[(k_int+1+i-j) + k_int*i+j] = 0;
+
+		printf("%lf ", AB[(k_int+1+i-j) + k_int*i+j]);
+		++indice;
+    ++j;
+
+    if (j == (int)*la)
+      {
+				j = 0;
+				++i;
+				printf("\n");
+			}
+  }
+}
 }
 
 void set_GB_operator_colMajor_poisson1D_Id(double* AB, int *lab, int *la, int *kv){
 }
 
+
+// Danx Ax = b ; fonction qui permet de créer b ; ici x pas dans espace
+// b de la forme (T0, 0, 0, ..., 0, T1) car g=0
+// (valeur initiale de b)
+// BC0 => T0 ; BC1 => T1
+// la => leading dimension
 void set_dense_RHS_DBC_1D(double* RHS, int* la, double* BC0, double* BC1){
-}  
+  RHS[0] = BC0;
+  for (int i=1; i<la-1; ++i)
+  {
+    RHS[i] = 0;
+  }
+  RHS[la-1] = BC1;
+}
+
 
 void set_analytical_solution_DBC_1D(double* EX_SOL, double* X, int* la, double* BC0, double* BC1){
-}  
+}
 
 void set_grid_points_1D(double* x, int* la){
 }
@@ -93,8 +136,8 @@ void write_vec(double* vec, int* la, char* filename){
   }
   else{
     perror(filename);
-  } 
-}  
+  }
+}
 
 void write_xy(double* vec, double* x, int* la, char* filename){
   int jj;
@@ -109,8 +152,8 @@ void write_xy(double* vec, double* x, int* la, char* filename){
   }
   else{
     perror(filename);
-  } 
-}  
+  }
+}
 
 int indexABCol(int i, int j, int *lab){
   return 0;
