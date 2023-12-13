@@ -1,0 +1,27 @@
+1) D'après https://netlib.org/clapack/readme
+double *A;
+A = malloc( LDA*N*sizeof(double) );
+
+# Note that for best memory utilization, you would set LDA=M, the
+# actual number of rows of A.  If you now wish to operate on the
+# matrix A, remember that A is in column-major order.
+
+
+2) Indique que la matrice est stockée en column-major.
+https://www.netlib.org/lapack/lapacke.html#_array_arguments
+
+
+3) On stocke la matrice dans un tableau à 1 dimension ;
+la dimension principale est la taille de la dimension principale
+i.e. si row-major -> taille row / si column-major -> taille column
+https://www.netlib.org/lapack/lapacke.html#_array_arguments
+
+
+4)
+*> DGBMV  performs one of the matrix-vector operations
+*>
+*>    y := alpha*A*x + beta*y,   or   y := alpha*A**T*x + beta*y,
+*>
+*> where alpha and beta are scalars, x and y are vectors and A is an
+*> m by n band matrix, with kl sub-diagonals and ku super-diagonals.
+https://netlib.org/blas/dgbmv.f
