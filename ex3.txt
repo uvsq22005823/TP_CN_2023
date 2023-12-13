@@ -1,3 +1,5 @@
+mail prof : jgurhem@aneo.fr
+
 1) D'après https://netlib.org/clapack/readme
 double *A;
 A = malloc( LDA*N*sizeof(double) );

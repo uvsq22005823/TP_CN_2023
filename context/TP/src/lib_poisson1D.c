@@ -15,26 +15,44 @@ void set_GB_operator_colMajor_poisson1D(double* AB, int *lab, int *la, int *kv){
   int j = 0;
 	int indice = 0;
 
-  while (i != (int)*lab)
+  for (int k = 0; k < k_int; ++k)
+    {
+      AB[indice] = 0;
+      ++indice;
+    }
+
+  AB[indice] = 0;
+  ++indice;
+  AB[indice] = -1;
+  ++indice;
+  AB[indice] = 2;
+  ++indice;
+  ++i;
+
+  while (i != (int)*la - 1)
   {
-    if(i == j)
-      AB[(k_int+1+i-j) + k_int*i+j] = 2;
-    else if(i == j+k_int || i == j-k_int)
-      AB[(k_int+1+i-j) + k_int*i+j] = -1;
-    else
-      AB[(k_int+1+i-j) + k_int*i+j] = 0;
+    for (int k = 0; k < k_int; ++k)
+    {
+      AB[indice] = 0;
+      ++indice;
+    }
 
-		printf("%lf ", AB[(k_int+1+i-j) + k_int*i+j]);
+    AB[indice] = -1;
+    ++indice;
+    AB[indice] = 2;
+    ++indice;
+    AB[indice] = -1;
 		++indice;
-    ++j;
 
-    if (j == (int)*la)
-      {
-				j = 0;
-				++i;
-				printf("\n");
-			}
+    ++i;
   }
+
+  AB[indice] = 0;
+  ++indice;
+  AB[indice] = -1;
+  ++indice;
+  AB[indice] = 2;
+  ++indice;
 }
 }
 
