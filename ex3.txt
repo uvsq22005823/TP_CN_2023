@@ -17,7 +17,28 @@ i.e. si row-major -> taille row / si column-major -> taille column
 https://www.netlib.org/lapack/lapacke.html#_array_arguments
 
 
+POUR LA DOC DES FONCTIONS => http://www.netlib.org/lapack/explore-html/
+
 4)
+subroutine 	dgbmv (trans, m, n, kl, ku, alpha, a, lda, x, incx, beta, y, incy)
+https://www.netlib.org/lapack/explore-html/d2/d3f/dgbmv_8f.html
+
+subroutine dgbmv  (     character                             trans,
+                        integer                               m,
+                        integer                               n,
+                        integer                               kl,
+                        integer                               ku,
+                        double precision                      alpha,
+                        double precision, dimension(lda,*)    a,
+                        integer                               lda,
+                        double precision, dimension(*)        x,
+                        integer                               incx,
+                        double precision                      beta,
+                        double precision, dimension(*)        y,
+                        integer                               incy
+)
+https://www.netlib.org/lapack/explore-html/dd/df4/group__gbmv_ga7001c2a185bcc8a3b6731f5d1ea7093e.html#ga7001c2a185bcc8a3b6731f5d1ea7093e
+
 *> DGBMV  performs one of the matrix-vector operations
 *>
 *>    y := alpha*A*x + beta*y,   or   y := alpha*A**T*x + beta*y,
@@ -25,3 +46,30 @@ https://www.netlib.org/lapack/lapacke.html#_array_arguments
 *> where alpha and beta are scalars, x and y are vectors and A is an
 *> m by n band matrix, with kl sub-diagonals and ku super-diagonals.
 https://netlib.org/blas/dgbmv.f
+
+
+
+5)
+subroutine dgbmv 	( 	character  	trans,
+		integer  	m,
+		integer  	n,
+		integer  	kl,
+		integer  	ku,
+		double precision  	alpha,
+		double precision, dimension(lda,*)  	a,
+		integer  	lda,
+		double precision, dimension(*)  	x,
+		integer  	incx,
+		double precision  	beta,
+		double precision, dimension(*)  	y,
+		integer  	incy
+	)
+
+ DGBMV  performs one of the matrix-vector operations
+
+    y := alpha*A*x + beta*y,   or   y := alpha*A**T*x + beta*y,
+
+ where alpha and beta are scalars, x and y are vectors and A is an
+ m by n band matrix, with kl sub-diagonals and ku super-diagonals.
+
+https://www.netlib.org/lapack/explore-html/dd/df4/group__gbmv_ga7001c2a185bcc8a3b6731f5d1ea7093e.html#ga7001c2a185bcc8a3b6731f5d1ea7093e
