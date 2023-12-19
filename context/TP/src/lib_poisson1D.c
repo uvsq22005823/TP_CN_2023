@@ -54,9 +54,53 @@ void set_GB_operator_colMajor_poisson1D(double* AB, int *lab, int *la, int *kv){
   AB[indice] = 2;
   ++indice;
 }
-}
+
 
 void set_GB_operator_colMajor_poisson1D_Id(double* AB, int *lab, int *la, int *kv){
+  // Comme celle au dessus mais avec des 1 à la place des 2 et 0 à la place de -1
+  int k_int = (int)*kv;
+  int i = 0;
+  int j = 0;
+	int indice = 0;
+
+  for (int k = 0; k < k_int; ++k)
+    {
+      AB[indice] = 0;
+      ++indice;
+    }
+
+  AB[indice] = 0;
+  ++indice;
+  AB[indice] = 0;
+  ++indice;
+  AB[indice] = 1;
+  ++indice;
+  ++i;
+
+  while (i != (int)*la - 1)
+  {
+    for (int k = 0; k < k_int; ++k)
+    {
+      AB[indice] = 0;
+      ++indice;
+    }
+
+    AB[indice] = 0;
+    ++indice;
+    AB[indice] = 1;
+    ++indice;
+    AB[indice] = 0;
+		++indice;
+
+    ++i;
+  }
+
+  AB[indice] = 0;
+  ++indice;
+  AB[indice] = 0;
+  ++indice;
+  AB[indice] = 1;
+  ++indice;
 }
 
 
@@ -66,12 +110,12 @@ void set_GB_operator_colMajor_poisson1D_Id(double* AB, int *lab, int *la, int *k
 // BC0 => T0 ; BC1 => T1
 // la => leading dimension
 void set_dense_RHS_DBC_1D(double* RHS, int* la, double* BC0, double* BC1){
-  RHS[0] = BC0;
-  for (int i=1; i<la-1; ++i)
+  RHS[0] = *BC0;
+  for (int i=1; i < *la-1; ++i)
   {
     RHS[i] = 0;
   }
-  RHS[la-1] = BC1;
+  RHS[*la-1] = *BC1;
 }
 
 

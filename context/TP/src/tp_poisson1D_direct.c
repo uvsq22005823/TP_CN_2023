@@ -39,7 +39,7 @@ int main(int argc,char *argv[])
   set_grid_points_1D(X, &la);
   set_dense_RHS_DBC_1D(RHS,&la,&T0,&T1);
   set_analytical_solution_DBC_1D(EX_SOL, X, &la, &T0, &T1);
-  
+
   write_vec(RHS, &la, "RHS.dat");
   write_vec(EX_SOL, &la, "EX_SOL.dat");
   write_vec(X, &la, "X_grid.dat");
@@ -65,10 +65,26 @@ int main(int argc,char *argv[])
   // ierr = dgbtrftridiag(&la, &la, &kl, &ku, AB, &lab, ipiv, &info);
 
   // write_GB_operator_colMajor_poisson1D(AB, &lab, &la, "LU.dat");
-  
+
+
+  /*
+#define LAPACK_dgbtrs_base LAPACK_GLOBAL(dgbtrs,DGBTRS)
+void LAPACK_dgbtrs_base(
+    char const* trans,
+    lapack_int const* n, lapack_int const* kl, lapack_int const* ku, lapack_int const* nrhs,
+    double const* AB, lapack_int const* ldab, lapack_int const* ipiv,
+    double* B, lapack_int const* ldb,
+    lapack_int* info
+#ifdef LAPACK_FORTRAN_STRLEN_END
+    , size_t
+#endif
+);
+Bon ben si jamais LAPACK_FORTRAN_STRLEN_END est défini
+   */
+
   /* Solution (Triangular) */
   if (info==0){
-    dgbtrs_("N", &la, &kl, &ku, &NRHS, AB, &lab, ipiv, RHS, &la, &info);
+    dgbtrs_("N", &la, &kl, &ku, &NRHS, AB, &lab, ipiv, RHS, &la, &info, 50);  // La dernière valeur est au pif voilà
     if (info!=0){printf("\n INFO DGBTRS = %d\n",info);}
   }else{
     printf("\n INFO = %d\n",info);
@@ -81,7 +97,7 @@ int main(int argc,char *argv[])
 
   /* Relative forward error */
   // TODO : Compute relative norm of the residual
-  
+
   printf("\nThe relative forward error is relres = %e\n",relres);
 
   free(RHS);
