@@ -5,6 +5,7 @@
 /******************************************/
 #include "lib_poisson1D.h"
 #include "atlas_headers.h"
+#include <omp.h>
 
 int main(int argc,char *argv[])
 /* ** argc: Nombre d'arguments */
@@ -110,7 +111,36 @@ Bon ben si jamais LAPACK_FORTRAN_STRLEN_END est défini
   double norm_mv = cblas_dnrm2(la, RHS, 1);
   norm_mv /= norme_RHS;  // Should give ~1.0
 
-  printf("%f\n", norm_mv);
+  // printf("%f\n", norm_mv);
+
+
+
+
+
+
+
+
+  // ex 5.1
+  double t1 = 0.0, t2 = 0.0;
+
+  set_GB_operator_colMajor_poisson1D(AB, &lab, &la, &kv);
+  set_dense_RHS_DBC_1D(RHS,&la,&T0,&T1);
+  t1 = omp_get_wtime();
+  dgbtrf_(&la, &lab, &kl, &ku, AB, &lab, ipiv, &info); // Crée une facto LU dans A avec pivot partiel (bloc BLAS3)
+  // nb ligne, nb colonne, nb sous-diag, nb sur-diag, leading dim, indice pivot??? (est un truc out anyway donc osef), info(littéralement une info, osef)
+  // utiliser LAPACK_dgbtrs  // Solves A * X = B avec A facto LU faites par DGBTRF
+  int n = 1;
+  LAPACK_dgbtrs("N", &n, &kl, &ku, &lab, AB, &lab, ipiv, RHS, &lab, &info);
+  t2 = omp_get_wtime();
+  double elapsed_s = (double)(t2 - t1);
+
+  printf("elpased time %f\n", elapsed_s);
+  // TODO: étudier perf
+
+
+
+
+
 
 
   /* Solution (Triangular) */
