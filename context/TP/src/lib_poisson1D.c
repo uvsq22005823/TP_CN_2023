@@ -62,8 +62,6 @@ void set_GB_operator_colMajor_poisson1D(double* AB, int *lab, int *la, int *kv){
 }
 
 
-
-
 void set_GB_operator_colMajor_poisson1D_Id(double* AB, int *lab, int *la, int *kv){
   // Comme celle au dessus mais avec des 1 à la place des 2 et 0 à la place de -1
   int k_int = (int)*kv;
@@ -130,8 +128,10 @@ void set_dense_RHS_DBC_1D(double* RHS, int* la, double* BC0, double* BC1){
 void set_analytical_solution_DBC_1D(double* EX_SOL, double* X, int* la, double* BC0, double* BC1){
 }
 
+
 void set_grid_points_1D(double* x, int* la){
 }
+
 
 void write_GB_operator_rowMajor_poisson1D(double* AB, int* lab, int* la, char* filename){
   FILE * file;
@@ -152,6 +152,7 @@ void write_GB_operator_rowMajor_poisson1D(double* AB, int* lab, int* la, char* f
   }
 }
 
+
 void write_GB_operator_colMajor_poisson1D(double* AB, int* lab, int* la, char* filename){
   FILE * file;
   int ii,jj;
@@ -170,6 +171,7 @@ void write_GB_operator_colMajor_poisson1D(double* AB, int* lab, int* la, char* f
     perror(filename);
   }
 }
+
 
 void write_GB2AIJ_operator_poisson1D(double* AB, int* la, char* filename){
   FILE * file;
@@ -193,6 +195,7 @@ void write_GB2AIJ_operator_poisson1D(double* AB, int* la, char* filename){
   }
 }
 
+
 void write_vec(double* vec, int* la, char* filename){
   int jj;
   FILE * file;
@@ -209,6 +212,7 @@ void write_vec(double* vec, int* la, char* filename){
   }
 }
 
+
 void write_xy(double* vec, double* x, int* la, char* filename){
   int jj;
   FILE * file;
@@ -224,6 +228,7 @@ void write_xy(double* vec, double* x, int* la, char* filename){
     perror(filename);
   }
 }
+
 
 int indexABCol(int i, int j, int *lab){
   return 0;

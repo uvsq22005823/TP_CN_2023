@@ -18,9 +18,9 @@ int main(int argc,char *argv[])
   int info;
   int NRHS;
   double T0, T1;
-  double *RHS, *EX_SOL, *X;
+  double *RHS, *RHS2, *EX_SOL, *X;  // Vecteurs
   double **AAB;
-  double *AB;
+  double *AB;  // Matrice
 
   double temp, relres;
 
@@ -32,6 +32,7 @@ int main(int argc,char *argv[])
 
   printf("--------- Poisson 1D ---------\n\n");
   RHS=(double *) malloc(sizeof(double)*la);
+  RHS2=(double *) malloc(sizeof(double)*la);
   EX_SOL=(double *) malloc(sizeof(double)*la);
   X=(double *) malloc(sizeof(double)*la);
 
@@ -55,15 +56,15 @@ int main(int argc,char *argv[])
   set_GB_operator_colMajor_poisson1D(AB, &lab, &la, &kv);
 
   // print matrice vérifier c'est ok
-  int indice = 0;
-  for (size_t i = 0; i < la; ++i) {
-    for (size_t j = 0; j < lab; ++j)
-    {
-      printf("%f ", AB[indice]);
-      ++indice;
-    }
-    printf("\n");
-  }
+  // int indice = 0;
+  // for (size_t i = 0; i < la; ++i) {
+  //   for (size_t j = 0; j < lab; ++j)
+  //   {
+  //     printf("%f ", AB[indice]);
+  //     ++indice;
+  //   }
+  //   printf("\n");
+  // }
 
 
   // write_GB_operator_colMajor_poisson1D(AB, &lab, &la, "AB.dat");
@@ -94,6 +95,23 @@ void LAPACK_dgbtrs_base(
 );
 Bon ben si jamais LAPACK_FORTRAN_STRLEN_END est défini
    */
+
+
+  // CBLAS DGBMV
+  cblas_dgbmv(CblasColMajor, CblasNoTrans, la, la, kl, ku, 1.0, AB+1, lab, EX_SOL, 1, 0.0, RHS2, 1);
+  // Bon l'appel compile et s'exécute c'est déjà ça j'ai envie de dire
+  // ku = 1 => alpha = 1
+  // beta = 0
+  // => AB+1 * lab
+
+  // Validation (4.3)
+  double norme_RHS = cblas_dnrm2(la, RHS, 1);
+  cblas_daxpy(la, -1, RHS2, 1, RHS, 1);  // DAXPY c'est Double A * X Plus Y
+  double norm_mv = cblas_dnrm2(la, RHS, 1);
+  norm_mv /= norme_RHS;  // Should give ~1.0
+
+  printf("%f\n", norm_mv);
+
 
   /* Solution (Triangular) */
   if (info==0){
