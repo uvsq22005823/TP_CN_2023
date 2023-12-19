@@ -51,7 +51,20 @@ int main(int argc,char *argv[])
 
   AB = (double *) malloc(sizeof(double)*lab*la);
 
+  // set_GB_operator_colMajor_poisson1D_Id(AB, &lab, &la, &kv);
   set_GB_operator_colMajor_poisson1D(AB, &lab, &la, &kv);
+
+  // print matrice vérifier c'est ok
+  int indice = 0;
+  for (size_t i = 0; i < la; ++i) {
+    for (size_t j = 0; j < lab; ++j)
+    {
+      printf("%f ", AB[indice]);
+      ++indice;
+    }
+    printf("\n");
+  }
+
 
   // write_GB_operator_colMajor_poisson1D(AB, &lab, &la, "AB.dat");
 
@@ -84,7 +97,7 @@ Bon ben si jamais LAPACK_FORTRAN_STRLEN_END est défini
 
   /* Solution (Triangular) */
   if (info==0){
-    dgbtrs_("N", &la, &kl, &ku, &NRHS, AB, &lab, ipiv, RHS, &la, &info, 50);  // La dernière valeur est au pif voilà
+    LAPACK_dgbtrs("N", &la, &kl, &ku, &NRHS, AB, &lab, ipiv, RHS, &la, &info);  // Remplacé dgbtrs_ par LAPACK_dgbtrs
     if (info!=0){printf("\n INFO DGBTRS = %d\n",info);}
   }else{
     printf("\n INFO = %d\n",info);
