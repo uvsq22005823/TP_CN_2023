@@ -105,7 +105,6 @@ int main(int argc,char *argv[])
   } else if (IMPLEM == GS) {
     extract_MB_gauss_seidel_tridiag(AB, MB, &lab, &la, &ku, &kl, &kv);
   }
-
   /* Solve with General Richardson */
   if (IMPLEM == JAC || IMPLEM == GS) {
     write_GB_operator_colMajor_poisson1D(MB, &lab, &la, "MB.dat");
