@@ -91,13 +91,12 @@ void richardson_alpha(double *AB, double *RHS, double *X, double *alpha_rich, in
   */
 
   double norme_b = cblas_dnrm2(*la, RHS, 1);
+  resvec[*nbite] = norme_b;
   double* y = malloc(sizeof(double) * *la);
   // cblas_dgbmv(CblasColMajor, CblasNoTrans, *la, *lab, *kl, *ku, -1, AB, *la, X, 1, 1, RHS, 1);
   // dgbmv_("N", la, lab, kl, ku, -1, AB, la, X, 1, 1, RHS, 1);
   while ((cblas_dnrm2(*la, RHS, 1) / norme_b) > *tol)
   {
-    if (*nbite == *maxit)
-      break;
     // Vecteur = Vecteur + scalaire * ( vecteur - matrice * vecteur)
     //*X = *X + *alpha_rich * (*RHS - *AB * *X);
     cblas_dcopy(*lab, RHS, 1, y, 1);
@@ -107,6 +106,9 @@ void richardson_alpha(double *AB, double *RHS, double *X, double *alpha_rich, in
     // dgbmv_("N", la, lab, kl, ku, -1, AB, la, X, 1, RHS, resvec, 1);  // (*RHS - *AB * *X)
     // daxpy_(la, alpha_rich, RHS, 1, X, 1);  // (*X = *X + *alpha * resultatprécédent)
     ++*nbite;
+    if (*nbite == *maxit)
+      break;
+    resvec[*nbite] = norme_b;
   /*
    calcul residu
    while residu > tol
@@ -129,11 +131,10 @@ void extract_MB_gauss_seidel_tridiag(double *AB, double *MB, int *lab, int *la,i
 
 void richardson_MB(double *AB, double *RHS, double *X, double *MB, int *lab, int *la,int *ku, int*kl, double *tol, int *maxit, double *resvec, int *nbite){
   double norme_b = cblas_dnrm2(*la, RHS, 1);
+  resvec[*nbite] = norme_b;
   double* y = malloc(sizeof(double) * *la);
   while ((cblas_dnrm2(*la, RHS, 1) / norme_b) > *tol)
   {
-    if (*nbite == *maxit)
-      break;
     // Vecteur = Vecteur + Matrice * vecteur~>( vecteur - matrice * vecteur)
     //*X = *X + *MB * (*RHS - *AB * *X);
     cblas_dcopy(*lab, RHS, 1, y, 1);
@@ -142,6 +143,9 @@ void richardson_MB(double *AB, double *RHS, double *X, double *MB, int *lab, int
     // X = X + MB * y
     cblas_dgbmv(CblasColMajor, CblasNoTrans, *lab, *lab, *kl, *ku, -1, MB, *lab, y, 1, 1, X, 1);
     ++*nbite;
+    if (*nbite == *maxit)
+      break;
+    resvec[*nbite] = norme_b;
   }
   free(y);
 
