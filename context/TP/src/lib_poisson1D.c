@@ -125,10 +125,36 @@ void set_dense_RHS_DBC_1D(double* RHS, int* la, double* BC0, double* BC1){
 }
 
 
+
+
+
+void set_GB_LU_factorisation(double* AB, int *lab, int *la, int *kv)
+{
+  // AB la matrice
+  // lab is row size and la is column size
+  // i.e. lab number of columns and la number of rows
+  // kv nombre bandes en plus ou je sais plus quoi
+  //a[i][j] is stored in AB[ku+1+i-j][j] for max(1,j-ku) <= i <= min(m,j+kl)
+  // a[indice] => AB[????]
+}
+
+
+
+
+
+
+
+
+
+
+
+
+// Je sais pas ce que c'est censé être
 void set_analytical_solution_DBC_1D(double* EX_SOL, double* X, int* la, double* BC0, double* BC1){
 }
 
 
+// Je sais pas ce que c'est censé être
 void set_grid_points_1D(double* x, int* la){
 }
 
