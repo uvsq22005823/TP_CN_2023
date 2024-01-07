@@ -1,6 +1,6 @@
 /**********************************************/
 /* lib_poisson1D.h                            */
-/* Header for Numerical library developed to  */ 
+/* Header for Numerical library developed to  */
 /* solve 1D Poisson problem (Heat equation)   */
 /**********************************************/
 #include <stdio.h>
@@ -8,6 +8,8 @@
 #include <math.h>
 #include <float.h>
 #include <limits.h>
+#include <time.h>
+#include <string.h>
 #include "atlas_headers.h"
 
 void set_GB_operator_colMajor_poisson1D(double* AB, int* lab, int *la, int *kv);

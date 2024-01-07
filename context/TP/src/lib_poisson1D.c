@@ -1,6 +1,6 @@
 /**********************************************/
 /* lib_poisson1D.c                            */
-/* Numerical library developed to solve 1D    */ 
+/* Numerical library developed to solve 1D    */
 /* Poisson problem (Heat equation)            */
 /**********************************************/
 #include "lib_poisson1D.h"
@@ -20,7 +20,7 @@ void set_GB_operator_colMajor_poisson1D(double* AB, int *lab, int *la, int *kv){
   }
   AB[0]=0.0;
   if (*kv == 1) {AB[1]=0;}
-  
+
   AB[(*lab)*(*la)-1]=0.0;
 }
 
@@ -48,7 +48,7 @@ void set_dense_RHS_DBC_1D(double* RHS, int* la, double* BC0, double* BC1){
   for (jj=1;jj<(*la)-1;jj++){
     RHS[jj]=0.0;
   }
-}  
+}
 
 void set_analytical_solution_DBC_1D(double* EX_SOL, double* X, int* la, double* BC0, double* BC1){
   int jj;
@@ -57,7 +57,7 @@ void set_analytical_solution_DBC_1D(double* EX_SOL, double* X, int* la, double* 
   for (jj=0;jj<(*la);jj++){
     EX_SOL[jj] = (*BC0) + X[jj]*DELTA_T;
   }
-}  
+}
 
 void set_grid_points_1D(double* x, int* la){
   int jj;
@@ -68,8 +68,18 @@ void set_grid_points_1D(double* x, int* la){
   }
 }
 
+// ||x - ^x|| / ||x||  avec ^x résultat calculé
 double relative_forward_error(double* x, double* y, int* la){
-  return 0;
+  // Calculating x - ^x
+  double* ymx = malloc(*la * sizeof(double));
+  for (size_t i = 0; i < *la; ++i)
+  {
+    ymx[i] = y[i] - x[i];
+  }
+
+  double retour = cblas_dnrm2(*la, ymx, 1) / cblas_dnrm2(*la, y, 1);
+  free(ymx);
+  return retour;
 }
 
 int indexABCol(int i, int j, int *lab){
@@ -77,5 +87,23 @@ int indexABCol(int i, int j, int *lab){
 }
 
 int dgbtrftridiag(int *la, int*n, int *kl, int *ku, double *AB, int *lab, int *ipiv, int *info){
+  ipiv[0] = 1;
+  for(size_t i = 1; i < *la; ++i)
+  {
+    // Handling null values
+    // TODO Find a way to handle illegal values
+    if(AB[*lab * i - 2] == 0)
+    {
+      *info = 1;
+      return *info;
+    }
+
+    AB[*lab * i - 1] /= AB[*lab * i - 2];
+    AB[*lab * (i + 1) - 2] -= AB[*lab * i - 1] * AB[*lab * (i + 1) - 3];
+
+    ipiv[i] = i + 1;
+  }
+
+  *info = 0;
   return *info;
 }

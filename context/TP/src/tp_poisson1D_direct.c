@@ -9,6 +9,66 @@
 #define TRI 1
 #define SV 2
 
+
+void sort_double(double *restrict a, size_t n)
+{
+  for (size_t i = 0; i < n; ++i)
+  {
+    for (size_t j = i + 1; j < n; ++j)
+    {
+      if (a[i] > a[j])
+      {
+        double tmp = a[i];
+        a[i] = a[j];
+        a[j] = tmp;
+      }
+    }
+  }
+}
+
+
+double mean_double(double *restrict a, size_t n)
+{
+  double m = 0.0;
+
+  for (size_t i = 0; i < n; ++i)
+    m += a[i];
+
+  m /= (double)n;
+
+  return m;
+}
+
+
+double stddev_double(double *restrict a, size_t n, double m)
+{
+  double d = 0.0;
+
+  for (size_t i = 0; i < n; ++i)
+    d += (a[i] - m) * (a[i] - m);
+
+  d /= (double)(n - 1);
+
+  return sqrt(d);
+}
+
+
+// Couldn't find a way to use the actual BLAS icopy
+void my_icopy(int taille, const int* source, int* dest)
+{
+  for (int i = 0; i < taille; ++i)
+  {
+    dest[i] = source[i];
+  }
+}
+
+
+// To measure performance
+#define MAX_SAMPLES 500
+#define n 10
+#define r 5000
+
+
 int main(int argc,char *argv[])
 /* ** argc: Nombre d'arguments */
 /* ** argv: Valeur des arguments */
@@ -36,7 +96,7 @@ int main(int argc,char *argv[])
   }
 
   NRHS=1;
-  nbpoints=10;
+  nbpoints=n;
   la=nbpoints-2;
   T0=-5.0;
   T1=5.0;
@@ -46,11 +106,10 @@ int main(int argc,char *argv[])
   EX_SOL=(double *) malloc(sizeof(double)*la);
   X=(double *) malloc(sizeof(double)*la);
 
-  // TODO : you have to implement those functions
   set_grid_points_1D(X, &la);
   set_dense_RHS_DBC_1D(RHS,&la,&T0,&T1);
   set_analytical_solution_DBC_1D(EX_SOL, X, &la, &T0, &T1);
-  
+
   write_vec(RHS, &la, "RHS.dat");
   write_vec(EX_SOL, &la, "EX_SOL.dat");
   write_vec(X, &la, "X_grid.dat");
@@ -59,6 +118,22 @@ int main(int argc,char *argv[])
   ku=1;
   kl=1;
   lab=kv+kl+ku+1;
+
+
+  // For time measures
+
+  struct timespec t1, t2;
+  double elapsed = 0.0;
+  double samples[MAX_SAMPLES];
+  double samples_deux[MAX_SAMPLES];
+
+
+  double size_b = (float)(sizeof(double) * n * n);;
+  double size_kib = size_b / (1024.0);
+  double size_mib = size_b / (1024.0 * 1024.0);
+
+  char* title = calloc(4, sizeof(char));
+  char* title_two = calloc(4, sizeof(char));
 
   AB = (double *) malloc(sizeof(double)*lab*la);
 
@@ -70,27 +145,151 @@ int main(int argc,char *argv[])
 
   /* LU Factorization */
   if (IMPLEM == TRF) {
-    dgbtrf_(&la, &la, &kl, &ku, AB, &lab, ipiv, &info);
+    strcpy(title, "TRF");
+
+    // Performance measure
+    int* ipiv_copy = (int *) calloc(la, sizeof(int));
+    double* AB_copy = (double *) malloc(sizeof(double) * lab * la);
+    for (size_t i = 0; i < MAX_SAMPLES; ++i)
+    {
+      do
+      {
+        // NOTE: might add a small error on time measure but I don't want to measure copying time
+        double total = 0;
+        for (size_t j = 0; j < r; ++j)
+        {
+          // Copy AB and ipiv
+          cblas_dcopy(lab * la, AB, 1, AB_copy, 1);
+          my_icopy(la, ipiv, ipiv_copy);
+
+          clock_gettime(CLOCK_MONOTONIC_RAW, &t1);
+          dgbtrf_(&la, &la, &kl, &ku, AB_copy, &lab, ipiv_copy, &info);
+          clock_gettime(CLOCK_MONOTONIC_RAW, &t2);
+          total += (double)(t2.tv_nsec - t1.tv_nsec);
+        }
+
+        elapsed = total / (double)r;
+      }
+      while (elapsed <= 0.0);
+      samples[i] = elapsed;
+    }
+    cblas_dcopy(lab * la, AB_copy, 1, AB, 1);
+    my_icopy(la, ipiv_copy, ipiv);
+    free(ipiv_copy);
+    free(AB_copy);
+
+    // dgbtrf_(&la, &la, &kl, &ku, AB, &lab, ipiv, &info);
   }
 
   /* LU for tridiagonal matrix  (can replace dgbtrf_) */
   if (IMPLEM == TRI) {
-    dgbtrftridiag(&la, &la, &kl, &ku, AB, &lab, ipiv, &info);
+    strcpy(title, "TRI");
+    int* ipiv_copy = (int *) calloc(la, sizeof(int));
+    double* AB_copy = (double *) malloc(sizeof(double) * lab * la);
+    for (size_t i = 0; i < MAX_SAMPLES; ++i)
+    {
+      do
+      {
+        double total = 0;
+        for (size_t j = 0; j < r; ++j)
+        {
+          // Copy AB and ipiv
+          cblas_dcopy(lab * la, AB, 1, AB_copy, 1);
+          my_icopy(la, ipiv, ipiv_copy);
+
+          clock_gettime(CLOCK_MONOTONIC_RAW, &t1);
+          dgbtrftridiag(&la, &la, &kl, &ku, AB_copy, &lab, ipiv_copy, &info);
+          clock_gettime(CLOCK_MONOTONIC_RAW, &t2);
+          total += (double)(t2.tv_nsec - t1.tv_nsec);
+        }
+
+        elapsed = total / (double)r;
+      }
+      while (elapsed <= 0.0);
+      samples[i] = elapsed;
+    }
+    cblas_dcopy(lab * la, AB_copy, 1, AB, 1);
+    my_icopy(la, ipiv_copy, ipiv);
+    free(ipiv_copy);
+    free(AB_copy);
+
+    // dgbtrftridiag(&la, &la, &kl, &ku, AB, &lab, ipiv, &info);
   }
 
   if (IMPLEM == TRI || IMPLEM == TRF){
+    strcpy(title_two, "TRS");
     /* Solution (Triangular) */
     if (info==0){
-      dgbtrs_("N", &la, &kl, &ku, &NRHS, AB, &lab, ipiv, RHS, &la, &info);
+
+      // Performance measure
+      double* RHS_copy = calloc(la, sizeof(double));
+      for (size_t i = 0; i < MAX_SAMPLES; ++i)
+      {
+        do
+        {
+          double total = 0;
+          for (size_t j = 0; j < r; ++j)
+          {
+            cblas_dcopy(la, RHS, 1, RHS_copy, 1);
+
+            clock_gettime(CLOCK_MONOTONIC_RAW, &t1);
+            dgbtrs_("N", &la, &kl, &ku, &NRHS, AB, &lab, ipiv, RHS_copy, &la, &info);
+            clock_gettime(CLOCK_MONOTONIC_RAW, &t2);
+            total += (double)(t2.tv_nsec - t1.tv_nsec);
+          }
+
+          elapsed = total / (double)r;
+        }
+        while (elapsed <= 0.0);
+        samples_deux[i] = elapsed;
+      }
+      cblas_dcopy(la, RHS_copy, 1, RHS, 1);
+      // WARNING Invalid pointer when trying to free this
+      // free(RHS_copy);
+
+      // dgbtrs_("N", &la, &kl, &ku, &NRHS, AB, &lab, ipiv, RHS, &la, &info);
       if (info!=0){printf("\n INFO DGBTRS = %d\n",info);}
-    }else{
-      printf("\n INFO = %d\n",info);
     }
+    else
+      {printf("\n INFO = %d\n",info);}
   }
 
   /* It can also be solved with dgbsv */
   if (IMPLEM == SV) {
-    // TODO : use dgbsv
+    strcpy(title, "SV");
+    int* ipiv_copy = (int *) calloc(la, sizeof(int));
+    double* AB_copy = (double *) malloc(sizeof(double) * lab * la);
+    double* RHS_copy = (double *) malloc(sizeof(double)*la);
+    for (size_t i = 0; i < MAX_SAMPLES; ++i)
+    {
+      do
+      {
+        double total = 0;
+        for (size_t j = 0; j < r; ++j)
+        {
+          cblas_dcopy(lab * la, AB, 1, AB_copy, 1);
+          my_icopy(la, ipiv, ipiv_copy);
+          cblas_dcopy(la, RHS, 1, RHS_copy, 1);
+
+          clock_gettime(CLOCK_MONOTONIC_RAW, &t1);
+          dgbsv_(&la, &kl, &ku, &NRHS, AB_copy, &lab, ipiv, RHS_copy, &la, &info);
+          clock_gettime(CLOCK_MONOTONIC_RAW, &t2);
+          total += (double)(t2.tv_nsec - t1.tv_nsec);
+        }
+
+        elapsed = total / (double)r;
+      }
+      while (elapsed <= 0.0);
+      samples[i] = elapsed;
+    }
+    cblas_dcopy(lab * la, AB_copy, 1, AB, 1);
+    my_icopy(la, ipiv_copy, ipiv);
+    cblas_dcopy(la, RHS_copy, 1, RHS, 1);
+    free(RHS_copy);
+    free(ipiv_copy);
+    free(AB_copy);
+
+    // dgbsv_(&la, &kl, &ku, &NRHS, AB, &lab, ipiv, RHS, &la, &info);
   }
 
   write_GB_operator_colMajor_poisson1D(AB, &lab, &la, "LU.dat");
@@ -98,9 +297,68 @@ int main(int argc,char *argv[])
 
   /* Relative forward error */
   relres = relative_forward_error(RHS, EX_SOL, &la);
-  
+
   printf("\nThe relative forward error is relres = %e\n",relres);
 
+
+
+  // Printing measures
+  sort_double(samples, MAX_SAMPLES);
+  double min  = samples[0];
+  double max  = samples[MAX_SAMPLES - 1];
+  double mean = mean_double(samples, MAX_SAMPLES);
+  double dev  = stddev_double(samples, MAX_SAMPLES, mean);
+
+  //Size in MiB / time in seconds
+  double mbps = size_mib / (mean / 1e9);
+
+  printf("%10s; %15s; %15s; %10s; %10s; %15s; %15s; %15s; %26s; %10s\n",
+	 "title",
+	 "KiB", "MiB", "n", "r",
+   "min", "max", "mean", "stddev (%)", "MiB/s");
+  printf("%10s; %15.3lf; %15.3lf; %10d; %10d; %15.3lf; %15.3lf; %15.3lf; %15.3lf (%6.3lf %%); %10.3lf\n",
+        title,
+        3 * size_kib,
+        3 * size_mib,
+        n,
+        r,
+        min,
+        max,
+        mean,
+        dev,
+        (dev * 100.0 / mean),
+        mbps);
+
+  if (IMPLEM != SV)
+  {
+    // Printing measures for sample deux
+    sort_double(samples_deux, MAX_SAMPLES);
+    min  = samples_deux[0];
+    max  = samples_deux[MAX_SAMPLES - 1];
+    mean = mean_double(samples_deux, MAX_SAMPLES);
+    dev  = stddev_double(samples_deux, MAX_SAMPLES, mean);
+
+    //Size in MiB / time in seconds
+    mbps = size_mib / (mean / 1e9);
+
+    printf("%10s; %15.3lf; %15.3lf; %10d; %10d; %15.3lf; %15.3lf; %15.3lf; %15.3lf (%6.3lf %%); %10.3lf\n",
+          title_two,
+          3 * size_kib,
+          3 * size_mib,
+          n,
+          r,
+          min,
+          max,
+          mean,
+          dev,
+          (dev * 100.0 / mean),
+          mbps);
+  }
+
+
+
+  free(title);
+  free(title_two);
   free(RHS);
   free(EX_SOL);
   free(X);
