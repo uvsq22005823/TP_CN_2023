@@ -67,7 +67,7 @@ void richardson_alpha(double *AB, double *RHS, double *X, double *alpha_rich, in
     => RHS -> b -> y
     ==> alpha = -1
     ==> beta = 1
-  ==> dgbmv("N", la, lab, kl, ku, -1, AB, la, X, 1, 1, RHS, 1)
+  ==> dgbmv("N", la, la, kl, ku, -1, AB, lab, X, 1, 1, RHS, 1)
 
   Calculer residu entre les deux opérations
 

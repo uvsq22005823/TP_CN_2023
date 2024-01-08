@@ -9,64 +9,10 @@
 #define TRI 1
 #define SV 2
 
-
-void sort_double(double *restrict a, size_t n)
-{
-  for (size_t i = 0; i < n; ++i)
-  {
-    for (size_t j = i + 1; j < n; ++j)
-    {
-      if (a[i] > a[j])
-      {
-        double tmp = a[i];
-        a[i] = a[j];
-        a[j] = tmp;
-      }
-    }
-  }
-}
-
-
-double mean_double(double *restrict a, size_t n)
-{
-  double m = 0.0;
-
-  for (size_t i = 0; i < n; ++i)
-    m += a[i];
-
-  m /= (double)n;
-
-  return m;
-}
-
-
-double stddev_double(double *restrict a, size_t n, double m)
-{
-  double d = 0.0;
-
-  for (size_t i = 0; i < n; ++i)
-    d += (a[i] - m) * (a[i] - m);
-
-  d /= (double)(n - 1);
-
-  return sqrt(d);
-}
-
-
-// Couldn't find a way to use the actual BLAS icopy
-void my_icopy(int taille, const int* source, int* dest)
-{
-  for (int i = 0; i < taille; ++i)
-  {
-    dest[i] = source[i];
-  }
-}
-
-
 // To measure performance
 #define MAX_SAMPLES 500
-#define n 10
-#define r 5000
+#define n 10   // Size of matrix
+#define r 5000 // Number of repetitions
 
 
 int main(int argc,char *argv[])
@@ -128,7 +74,7 @@ int main(int argc,char *argv[])
   double samples_deux[MAX_SAMPLES];
 
 
-  double size_b = (float)(sizeof(double) * n * n);;
+  double size_b = (double)(sizeof(double) * la * lab);;
   double size_kib = size_b / (1024.0);
   double size_mib = size_b / (1024.0 * 1024.0);
 

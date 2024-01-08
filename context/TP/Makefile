@@ -7,17 +7,17 @@
 ################################
 # Variables for this makefile
 ################################
-# 
+#
 # -- option to dedicated machine
 #
 # Rk: You should create a file such as your-machineName.mk
-# Follow the example of the machine called "ambre" in the 
+# Follow the example of the machine called "ambre" in the
 # file ambre.mk
 #
 HOSTNAME?=$(shell hostname)
 include $(HOSTNAME).mk
 
-# 
+#
 # -- Compiler Option
 OPTC=${OPTCLOCAL}
 
@@ -41,7 +41,7 @@ INCL= -I $(TPDIR)/include $(INCLATLAS)
 #
 SOL?=
 OBJENV= tp_env.o
-OBJLIBPOISSON= lib_poisson1D$(SOL).o lib_poisson1D_writers.o lib_poisson1D_richardson$(SOL).o
+OBJLIBPOISSON= tools.o lib_poisson1D$(SOL).o lib_poisson1D_writers.o lib_poisson1D_richardson$(SOL).o
 OBJTP2ITER= $(OBJLIBPOISSON) tp_poisson1D_iter.o
 OBJTP2DIRECT= $(OBJLIBPOISSON) tp_poisson1D_direct.o
 #
@@ -56,10 +56,13 @@ tpPoisson1D_iter: bin/tpPoisson1D_iter
 
 tpPoisson1D_direct: bin/tpPoisson1D_direct
 
+tools.o: $(TPDIRSRC)/tools.c
+	$(CC) $(OPTC) -c -I $(TPDIR)/include $<
+
 %.o : $(TPDIRSRC)/%.c
 	$(CC) $(OPTC) -c $(INCL) $<
 
-bin/tp_testenv: $(OBJENV) 
+bin/tp_testenv: $(OBJENV)
 	$(CC) -o bin/tp_testenv $(OPTC) $(OBJENV) $(LIBS)
 
 bin/tpPoisson1D_iter: $(OBJTP2ITER)

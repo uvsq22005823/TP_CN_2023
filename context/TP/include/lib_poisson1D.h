@@ -11,6 +11,7 @@
 #include <time.h>
 #include <string.h>
 #include "atlas_headers.h"
+#include "tools.h"
 
 void set_GB_operator_colMajor_poisson1D(double* AB, int* lab, int *la, int *kv);
 void set_GB_operator_colMajor_poisson1D_Id(double* AB, int* lab, int *la, int *kv);
