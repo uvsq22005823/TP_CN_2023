@@ -114,6 +114,7 @@ int main(int argc,char *argv[])
     // Performance measure
     strcpy(title, "ALP");
     double* SOL_copy = (double *) malloc(sizeof(double) * la);
+    double* resvec_copy = malloc(maxit * sizeof(double));
     int nbite_copy = nbite;
     for (size_t i = 0; i < MAX_SAMPLES; ++i)
     {
@@ -124,11 +125,12 @@ int main(int argc,char *argv[])
         for (size_t j = 0; j < r; ++j)
         {
           cblas_dcopy(la, SOL, 1, SOL_copy, 1);
+          cblas_dcopy(maxit, resvec, 1, resvec_copy, 1);
           nbite_copy = nbite;
 
           clock_gettime(CLOCK_MONOTONIC_RAW, &t1);
           // NOTE: Add calculation of optimum alpha here ? Or maybe measure the time it takes?
-          richardson_alpha(AB, RHS, SOL_copy, &opt_alpha, &lab, &la, &ku, &kl, &tol, &maxit, resvec, &nbite_copy);
+          richardson_alpha(AB, RHS, SOL_copy, &opt_alpha, &lab, &la, &ku, &kl, &tol, &maxit, resvec_copy, &nbite_copy);
           clock_gettime(CLOCK_MONOTONIC_RAW, &t2);
           total += (double)(t2.tv_nsec - t1.tv_nsec);
         }
@@ -139,8 +141,10 @@ int main(int argc,char *argv[])
       samples[i] = elapsed;
     }
     cblas_dcopy(la, SOL_copy, 1, SOL, 1);
+    cblas_dcopy(maxit, resvec_copy, 1, resvec, 1);
     nbite = nbite_copy;
     free(SOL_copy);
+    free(resvec_copy);
 
 
     // richardson_alpha(AB, RHS, SOL, &opt_alpha, &lab, &la, &ku, &kl, &tol, &maxit, resvec, &nbite);
